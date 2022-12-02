@@ -17,6 +17,7 @@ pub enum TsKeywordTypeKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TsTypeElement {
     pub key: String,
+    pub doc: Option<String>,
     pub type_ann: TsType,
     pub optional: bool,
 }
@@ -101,6 +102,7 @@ macro_rules! type_lit {
                     key: stringify!($k).to_string(),
                     type_ann: $t,
                     optional: false,
+                    doc: None,
                 }
             ),*],
         })
@@ -381,6 +383,7 @@ impl TsType {
                 } else {
                     TsTypeElement {
                         key: name,
+                        doc: None,
                         type_ann,
                         optional: false,
                     }
@@ -391,6 +394,7 @@ impl TsType {
                 if type_ann == TsType::nullish() {
                     let tag_field: TsType = TsTypeElement {
                         key: tag.clone(),
+                        doc: None,
                         type_ann: TsType::Lit(name),
                         optional: false,
                     }
@@ -400,6 +404,7 @@ impl TsType {
                 } else {
                     let tag_field: TsType = TsTypeElement {
                         key: tag.clone(),
+                        doc: None,
                         type_ann: TsType::Lit(name),
                         optional: false,
                     }
@@ -411,6 +416,7 @@ impl TsType {
             TagType::Adjacent { tag, content } => {
                 let tag_field = TsTypeElement {
                     key: tag.clone(),
+                    doc: None,
                     type_ann: TsType::Lit(name),
                     optional: false,
                 };
@@ -420,6 +426,7 @@ impl TsType {
                 } else {
                     let content_field = TsTypeElement {
                         key: content.clone(),
+                        doc: None,
                         type_ann,
                         optional: false,
                     };
@@ -517,6 +524,7 @@ impl TsType {
                     .iter()
                     .map(|t| TsTypeElement {
                         key: t.key.clone(),
+                        doc: t.doc.clone(),
                         optional: t.optional,
                         type_ann: t.type_ann.clone().prefix_type_refs(prefix, exceptions),
                     })
@@ -584,6 +592,10 @@ impl Display for TsTypeElement {
         let type_ann = &self.type_ann;
 
         let optional_ann = if self.optional { "?" } else { "" };
+
+        if let Some(docs) = &self.doc {
+            writeln!(f, "// {docs}")?;
+        }
 
         if is_js_ident(key) {
             write!(f, "{key}{optional_ann}: {type_ann}")

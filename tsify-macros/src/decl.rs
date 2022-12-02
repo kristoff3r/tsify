@@ -139,6 +139,7 @@ impl TsEnumDecl {
                     .iter()
                     .map(|t| TsTypeElement {
                         key: t.key.clone(),
+                        doc: t.doc.clone(),
                         optional: t.optional,
                         type_ann: TsEnumDecl::replace_type_params(t.type_ann.clone(), type_args),
                     })

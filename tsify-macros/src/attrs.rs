@@ -39,16 +39,18 @@ impl FromDeriveInput for TsifyContainerAttars {
 }
 
 #[derive(Debug, Default, FromField)]
-#[darling(attributes(tsify), default)]
+#[darling(attributes(tsify), default, forward_attrs(doc))]
 pub struct TsifyFieldAttrs {
     #[darling(rename = "type")]
     pub type_override: Option<String>,
+    pub doc: Option<String>,
     pub optional: bool,
 }
 
 impl TsifyFieldAttrs {
     pub fn from_serde_field(field: &Field) -> darling::Result<Self> {
         let mut attrs = Self::from_field(field.original)?;
+        println!("field: {:?} attrs: {:?}", field.original, attrs);
 
         if let Some(expr) = field.attrs.skip_serializing_if() {
             let path = expr

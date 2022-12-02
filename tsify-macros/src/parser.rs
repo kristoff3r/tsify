@@ -124,6 +124,7 @@ impl<'a> Parser<'a> {
                     key: tag.clone(),
                     type_ann: TsType::Lit(name),
                     optional: false,
+                    doc: Some("TEST LOL".to_string()),
                 };
 
                 let mut vec = Vec::with_capacity(members.len() + 1);
@@ -211,7 +212,12 @@ impl<'a> Parser<'a> {
                 let key = field.attrs.name().serialize_name();
                 let (type_ann, field_attrs) = self.parse_field(field);
 
-                let optional = field_attrs.map_or(false, |attrs| attrs.optional);
+                let mut optional = false;
+                let mut doc = None;
+                if let Some(field_attrs) = field_attrs {
+                    optional = field_attrs.optional;
+                    doc = field_attrs.doc;
+                }
                 let default_is_none = self.container.serde_attrs().default().is_none()
                     && field.attrs.default().is_none();
 
@@ -228,6 +234,7 @@ impl<'a> Parser<'a> {
                     key,
                     type_ann,
                     optional: optional || !default_is_none,
+                    doc,
                 }
             })
             .collect();
